@@ -1,0 +1,45 @@
+#!/bin/bash -e
+
+printHelp() {
+	echo "------------------"
+	echo "  Gopher Path     "
+	echo "------------------"
+	echo
+	echo "Usage:"
+	echo
+	echo "  $0 [--dir DIR] <commad>"
+	echo
+	exit 1
+}
+
+WDIR=`pwd`
+CMD=""
+
+while [[ $# > 0 ]]
+do
+	key="$1"
+	shift
+	case $key in
+		-d|-dir)
+			WDIR="$1"
+			shift
+		;;
+		-h|-help)
+			printHelp
+		;;
+		*)
+			CMD="$key $@"
+			break
+		;;
+	esac
+done
+
+if [[ "x$CMD" == "x" ]]; then
+	printHelp
+fi
+
+cd "$WDIR"
+
+ECMD="gopherpath-$CMD"
+
+bash -c "$ECMD"
