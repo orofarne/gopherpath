@@ -1,0 +1,32 @@
+#!/bin/bash -e
+
+TSV_FILE="rev.tsv"
+
+echoWColor() {
+	prefix="-- "
+	clr=$1
+	shift
+	if [[ "x$GOPHERPATH_COLOR" == "xyes" ]]; then
+		echo -e "$clr$prefix$@\033[0m"
+	else
+		echo "$prefix$@"
+	fi
+}
+
+buildDir() {
+	if go build "$1" 2> /dev/null; then
+		echoWColor "\033[1;32m" $1
+	else
+		echoWColor "\033[1;34m" $1
+
+		for subdir in `find "./src/$1" -mindepth 1 -maxdepth 1 -type 'd'`; do
+			submod=`echo "$subdir" | sed 's#^\./src/##'`
+			buildDir "$submod"
+		done
+	fi
+}
+
+PKGS=`awk '{ print $1; }' < "$TSV_FILE"`
+for pkg in $PKGS; do
+	buildDir "$pkg"
+done

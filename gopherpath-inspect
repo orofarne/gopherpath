@@ -1,0 +1,9 @@
+#!/bin/bash -e
+
+PKG=$1
+
+if [[ "x$GOPHERPATH_COLOR" == "xyes" ]]; then
+	go list -json "$PKG" | jq ''
+else
+	go list -json "$PKG"
+fi
