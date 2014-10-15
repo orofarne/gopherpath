@@ -1,0 +1,36 @@
+#!/bin/bash -e
+
+TSV_FILE="rev.tsv"
+
+getRev() {
+	cd "$1"
+
+	case "$2" in
+	"git")
+		git log --pretty=format:'%H' -n 1
+		;;
+	"hg")
+		hg log -l 1 --template '{node}\n'
+		;;
+	*)
+		echo "Unknown CVS" >&2
+		exit 1
+		;;
+	esac
+}
+
+DIRS=`find ./src -type 'd' -and \( -name '.git' -or -name '.hg' \)`
+
+for dir in $DIRS; do
+	mDir=`echo "$dir" | sed 's#/\.[a-z]\+$##'`
+	mName=`echo "$mDir" | sed 's#^./src/##'`
+	mType=`echo "$dir" | egrep -o '/\.[a-z]+$' | sed 's#^/\.##'`
+	mRev=$(getRev "$mDir" "$mType")
+	echo -e "$mName\t\t\t[$mType]\t\t\t{$mRev}";
+	if [[ -f "$TSV_FILE" ]]; then
+		grep -v "$mName" "$TSV_FILE" > "~$TSV_FILE"
+		mv "~$TSV_FILE" "$TSV_FILE"
+	fi
+	echo -e "$mName\t$mRev" >> "$TSV_FILE"
+	rm -rf "$dir"
+done
