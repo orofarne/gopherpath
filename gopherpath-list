@@ -1,0 +1,9 @@
+#!/bin/bash -e
+
+TSV_FILE="rev.tsv"
+
+if [[ "x$GOPHERPATH_COLOR" == "xyes" ]]; then
+	cat "$TSV_FILE" | awk '{ print "\033[1;32m" $1 "\t\t\t" "\033[0;33m" $2 "\033[0m" }'
+else
+	cat "$TSV_FILE"
+fi

@@ -7,7 +7,7 @@ printHelp() {
 	echo
 	echo "Usage:"
 	echo
-	echo "  $0 [--dir DIR] <commad>"
+	echo "  $0 [-dir DIR] [-color yes|no|auto] <commad>"
 	echo
 	exit 1
 }
@@ -20,11 +20,15 @@ do
 	key="$1"
 	shift
 	case $key in
-		-d|-dir)
+		-d|-dir|--dir)
 			WDIR="$1"
 			shift
 		;;
-		-h|-help)
+		-c|-color|--color)
+			COLOR="$1"
+			shift
+		;;
+		-h|-help|--help)
 			printHelp
 		;;
 		*)
@@ -39,7 +43,25 @@ if [[ "x$CMD" == "x" ]]; then
 fi
 
 cd "$WDIR"
+export GOPATH=`pwd`
 
-ECMD="gopherpath-$CMD"
+# Detect color
+case $COLOR in
+	yes)
+		export GOPHERPATH_COLOR="yes"
+	;;
+	no)
+		export GOPHERPATH_COLOR="no"
+	;;
+	*)
+		# auto
+		ncolors=$(tput colors)
+		if [ -t 1 ] && test -n "$ncolors" && test $ncolors -ge 8; then
+			export GOPHERPATH_COLOR="yes"
+		else
+			export GOPHERPATH_COLOR="no"
+		fi
+	;;
+esac
 
-bash -c "$ECMD"
+bash -c "gopherpath-$CMD"
