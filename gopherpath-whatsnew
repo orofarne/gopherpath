@@ -1,0 +1,51 @@
+#!/bin/bash -e
+
+TSV_FILE="rev.tsv"
+PKG=$1
+
+if [[ "x$PKG" == "x" ]]; then
+	echo "Usage: $0 <package>"
+	exit 1
+fi
+
+printGitLog() {
+	GIT_COLOR="never"
+	if [[ "x$GOPHERPATH_COLOR" == "xyes" ]]; then
+		GIT_COLOR="always"
+	fi
+	git clone "$1" repo 2> /dev/null
+	cd repo
+	git log --color="$GIT_COLOR" $2..HEAD
+	cd - > /dev/null
+}
+
+printHgLog() {
+	hg clone "$1" repo > /dev/null
+	cd repo
+	curRev=`hg log -l 1 --template '{node}\n'`
+	hg log --color="$GOPHERPATH_COLOR" -r $curRev-$2
+	cd - > /dev/null
+}
+
+localRaw=`grep "$PKG" "$TSV_FILE"`
+localRevRaw=`echo "$localRaw" | awk '{ print $2; }'`
+repo=`echo "$localRaw" | awk '{ print $1; }'`
+repoType=`echo "$localRevRaw" | sed 's/:[^:]*$//'`
+localRev=`echo "$localRevRaw" | sed 's/^[^:]*://'`
+
+TMP_DIR=`mktemp -d`
+cd "$TMP_DIR"
+	case "$repoType" in
+	"git")
+		printGitLog "https://$repo.git" "$localRev"
+		;;
+	"hg")
+		printHgLog "https://$repo" "$localRev"
+		;;
+	*)
+		echo "Unknown CVS" >&2
+		exit 1
+		;;
+	esac
+cd - > /dev/null
+rm -rf "$TMP_DIR"
