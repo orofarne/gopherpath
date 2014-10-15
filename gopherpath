@@ -44,6 +44,7 @@ fi
 
 cd "$WDIR"
 export GOPATH=`pwd`
+export GOBIN="$GOPATH/bin"
 
 # Detect color
 case $COLOR in

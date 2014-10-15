@@ -1,23 +1,38 @@
 #!/bin/bash -e
 
 TSV_FILE="rev.tsv"
+if [[ "x$1" == "xverbose" ]]; then
+	VERBOSE=1
+fi
+FAILED_PKGS=()
 
 echoWColor() {
-	prefix="-- "
 	clr=$1
 	shift
 	if [[ "x$GOPHERPATH_COLOR" == "xyes" ]]; then
-		echo -e "$clr$prefix$@\033[0m"
+		echo -e "$clr$@\033[0m"
 	else
-		echo "$prefix$@"
+		echo -e "$@"
 	fi
 }
 
 buildDir() {
 	if go build "$1" 2> /dev/null; then
-		echoWColor "\033[1;32m" $1
+		set +e
+		testOutput=`go test -timeout 1m "$1"`
+		testRc=$?
+		set -e
+		if [[ "x$testRc" == "x0" ]]; then
+			echoWColor "\033[0;32m" "-- $1"
+		else
+			echoWColor "\033[0;31m" "-- $1\t[TEST FAILED]"
+			if [[ "x$VERBOSE" == "x1" ]]; then
+				echo -e $testOutput
+			fi
+			FAILED_PKGS+=("$1")
+		fi
 	else
-		echoWColor "\033[1;34m" $1
+		echoWColor "\033[0;34m" "-- $1"
 
 		for subdir in `find "./src/$1" -mindepth 1 -maxdepth 1 -type 'd'`; do
 			submod=`echo "$subdir" | sed 's#^\./src/##'`
@@ -30,3 +45,14 @@ PKGS=`awk '{ print $1; }' < "$TSV_FILE"`
 for pkg in $PKGS; do
 	buildDir "$pkg"
 done
+
+if [[ ${#FAILED_PKGS[@]} -gt 0 ]]; then
+	echo
+	echo
+	echo
+	echoWColor "\033[1;31m" "=== Failed tests ==="
+	echo
+	for pkg in ${FAILED_PKGS[@]}; do
+		echoWColor "\033[1;31m" "$pkg"
+	done
+fi
