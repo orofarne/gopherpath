@@ -1,0 +1,31 @@
+#!/bin/bash -e
+
+TSV_FILE="rev.tsv"
+PKG=$1
+
+if [[ "x$PKG" == "x" ]]; then
+	echo "Usage: $0 <package>"
+	exit 1
+fi
+
+localRaw=`grep "$PKG" "$TSV_FILE"`
+localRevRaw=`echo "$localRaw" | awk '{ print $2; }'`
+repo=`echo "$localRaw" | awk '{ print $1; }'`
+repoType=`echo "$localRevRaw" | sed 's/:[^:]*$//'`
+
+gopherpath-rm "$PKG"
+
+case "$repoType" in
+"git")
+	git clone "https://$repo.git" "./src/$repo"
+	;;
+"hg")
+	hg clone "https://$repo" "./src/$repo"
+	;;
+*)
+	echo "Unknown CVS" >&2
+	exit 1
+	;;
+esac
+
+gopherpath-fix
