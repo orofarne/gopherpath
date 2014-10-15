@@ -17,7 +17,7 @@ echoWColor() {
 }
 
 buildDir() {
-	if go build "$1" 2> /dev/null; then
+	if go install "$1" 2> /dev/null; then
 		set +e
 		testOutput=`go test -timeout 1m "$1"`
 		testRc=$?
