@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+PKG=$1
+TSV_FILE="rev.tsv"
+
+rm -rf "./src/$PKG"
+grep -v "$PKG" "$TSV_FILE" > "~$TSV_FILE"
+mv "~$TSV_FILE" "$TSV_FILE"
