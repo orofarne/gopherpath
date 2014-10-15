@@ -31,6 +31,6 @@ for dir in $DIRS; do
 		grep -v "$mName" "$TSV_FILE" > "~$TSV_FILE"
 		mv "~$TSV_FILE" "$TSV_FILE"
 	fi
-	echo -e "$mName\t$mRev" >> "$TSV_FILE"
+	echo -e "$mName\t$mType:$mRev" >> "$TSV_FILE"
 	rm -rf "$dir"
 done
