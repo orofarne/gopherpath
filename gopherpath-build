@@ -33,12 +33,12 @@ buildDir() {
 		fi
 	else
 		echoWColor "\033[0;34m" "-- $1"
-
-		for subdir in `find "./src/$1" -mindepth 1 -maxdepth 1 -type 'd'`; do
-			submod=`echo "$subdir" | sed 's#^\./src/##'`
-			buildDir "$submod"
-		done
 	fi
+
+	for subdir in `find "./src/$1" -mindepth 1 -maxdepth 1 -type 'd'`; do
+		submod=`echo "$subdir" | sed 's#^\./src/##'`
+		buildDir "$submod"
+	done
 }
 
 PKGS=`awk '{ print $1; }' < "$TSV_FILE"`
